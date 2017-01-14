@@ -1,9 +1,9 @@
 package com.handlers;
 
-import com.Message;
+import com.MessageWithSocketChannel;
 
 public interface Handler extends Runnable {
-	void processMessage();
+    void processMessage();
 
-	void setMessage(Message message);
+    void setMessage(MessageWithSocketChannel message);
 }
