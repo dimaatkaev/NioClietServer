@@ -39,16 +39,13 @@ public class MessageRouter extends Thread {
         while (true) {
             if (!handleMessages.isEmpty()) {
                 MessageWithSocketChannel pollValue = (MessageWithSocketChannel) handleMessages.poll();
-                if (pollValue.getMessage().getType() == Message.Type.REGISTER) {
-                    Handler handler = handlers.get(Message.Type.REGISTER);
-                    setMessageAndLog(handler, pollValue);
-                    executor.execute(handler);
-                } else if (pollValue.getMessage().getType() == Message.Type.COMMUNICATION) {
-                    Handler handler = handlers.get(Message.Type.COMMUNICATION);
-                    setMessageAndLog(handler, pollValue);
-                    executor.execute(handler);
-                } else {
-                    throw new IllegalArgumentException("Incorrect handler type.");
+
+                for (Message.Type handlerType : handlers.keySet()) {
+                    if (pollValue.getMessage().getType() == handlerType) {
+                        Handler handler = handlers.get(handlerType);
+                        setMessageAndLog(handler, pollValue);
+                        executor.execute(handler);
+                    }
                 }
             }
         }
