@@ -19,12 +19,13 @@ public class Client {
     private static final String REGISTER_MESSAGE = "register";
     private static final String EXIT_PHRASE = "exit";
     private static final int WAIT_TIME = 1000;
+    private static final int INIT_PORT = 1111;
     private static final int BYTE_BUFFER_CAPACITY = 256;
 
     private boolean isFinish = false;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        new Client().clientAction();
+        new Client().go();
     }
 
     private static void log(String str) {
@@ -39,13 +40,56 @@ public class Client {
         this.chatMembers = chatMembers;
     }
 
-    private void clientAction() throws IOException, ClassNotFoundException, InterruptedException {
-        InetSocketAddress serverAddr = new InetSocketAddress("localhost", 1111);
-        SocketChannel client = connectToServer(serverAddr);
+    private void go() throws IOException, ClassNotFoundException, InterruptedException {
+        InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
+        SocketChannel client = connectToServer(serverAdr);
 
-        log("Connecting to com.Server on port 1111...");
+        log("Connecting to com.Server on port " + INIT_PORT + "...");
 
-        //send register message
+        sendRegisterMessage(client);
+
+        Thread listener = new SocketListener(client);
+        listener.start();
+
+        // waiting for register request
+        while (chatMembers.isEmpty()){
+            Thread.sleep(500);
+        }
+
+        askCommunicationMessage(client, listener);
+
+        client.close();
+    }
+
+    private void askCommunicationMessage(SocketChannel client, Thread listener) throws IOException {
+        while (true) {
+            if (isFinish) {
+                listener.interrupt();
+                client.close();
+                break;
+            }
+
+            log("please choose recipient: " + String.join(", ", chatMembers));
+            String recipient = readLine();
+            if (!chatMembers.contains(recipient)) {
+                log("There is no recipient with entered name");
+                continue;
+            }
+
+            log("Please write message");
+            String text = readLine();
+            byte[] communicationMessage = Message.getMessageAsByteArray(
+                    new Message(Message.Type.COMMUNICATION, text, recipient)
+            );
+            ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);
+            //TODO Add buffer to split message
+            client.write(communicationBuffer);
+            communicationBuffer.clear();
+            log("sent text = " + text);
+        }
+    }
+
+    private void sendRegisterMessage(SocketChannel client) throws IOException {
         log("Please, enter your nickname");
         setName(readLine());
 
@@ -54,31 +98,6 @@ public class Client {
         client.write(buffer);
         log("sent register message, name = " + name);
         buffer.clear();
-
-        Thread listener = new SocketListener(client);
-        listener.start();
-
-        while (true) {
-            if (isFinish) {
-                listener.interrupt();
-                client.close();
-                break;
-            }
-            String recipient = readLine();
-            if (!chatMembers.contains(recipient)) {
-                log("There is no recipient with entered name");
-                continue;
-            }
-            System.out.println("Please write message");
-            String text = readLine();
-            byte[] communicationMessage = Message.getMessageAsByteArray(new Message(Message.Type.COMMUNICATION, text, recipient));
-            ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);
-            //TODO Add buffer to split message
-            client.write(communicationBuffer);
-            communicationBuffer.clear();
-            log("sent text = " + text);
-        }
-        client.close();
     }
 
     private List<String> getChatMembers(String list) {
@@ -107,7 +126,7 @@ public class Client {
                     //TODO buffered message
                     if (inMessage.getType().equals(Message.Type.REGISTER_REQUEST)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
-                        log("please choose recipient: " + String.join(", ", chatMembers));
+//                        log("please choose recipient: " + String.join(", ", chatMembers));
                     } else {
                         log("incoming message: " + inMessage.getText());
                     }
