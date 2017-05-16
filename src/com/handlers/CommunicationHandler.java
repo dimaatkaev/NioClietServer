@@ -1,6 +1,7 @@
 package com.handlers;
 
 import com.Message;
+import com.MessageUtils;
 import com.MessageWithSocketChannel;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class CommunicationHandler implements Handler, Runnable {
     @Override
     public void processMessage() {
         try {
-            byte[] communicationMessage = Message.getMessageAsByteArray(message);
+            byte[] communicationMessage = MessageUtils.getMessageAsByteArray(message);
             SocketChannel socketChannel = clients.get(message.getNickname());
 
             ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);

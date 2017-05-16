@@ -77,7 +77,7 @@ public class Server {
                     SocketChannel client = (SocketChannel) myKey.channel();
                     ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
                     client.read(clientBuffer);
-                    Message message = Message.getMessageFromByteArray(clientBuffer.array());
+                    Message message = MessageUtils.getMessageFromByteArray(clientBuffer.array());
 
                     messageRouter.addMessageInQueue(message, client);
 

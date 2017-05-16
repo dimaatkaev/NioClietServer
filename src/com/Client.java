@@ -78,7 +78,7 @@ public class Client {
 
             log("Please write message");
             String text = readLine();
-            byte[] communicationMessage = Message.getMessageAsByteArray(
+            byte[] communicationMessage = MessageUtils.getMessageAsByteArray(
                     new Message(Message.Type.COMMUNICATION, text, recipient)
             );
             ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);
@@ -93,7 +93,7 @@ public class Client {
         log("Please, enter your nickname");
         setName(readLine());
 
-        byte[] message = Message.getMessageAsByteArray(createRegisterMessage());
+        byte[] message = MessageUtils.getMessageAsByteArray(createRegisterMessage());
         ByteBuffer buffer = ByteBuffer.wrap(message);
         client.write(buffer);
         log("sent register message, name = " + name);
@@ -122,7 +122,7 @@ public class Client {
                 try {
                     ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
                     client.read(clientBuffer);
-                    Message inMessage = Message.getMessageFromByteArray(clientBuffer.array());
+                    Message inMessage = MessageUtils.getMessageFromByteArray(clientBuffer.array());
                     //TODO buffered message
                     if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
