@@ -1,7 +1,6 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageRouter;
 import com.MessageWithSocketChannel;
 
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class RegisterHandler implements Handler, Runnable {
 
         try {
             String clientsAsString = String.join(", ", clients.keySet());
-            Message request = new Message(Message.Type.REGISTER_REQUEST, clientsAsString, "server");
+            Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
             byte[] requestBytes = Message.getMessageAsByteArray(request);
             ByteBuffer communicationBuffer;
             //send chat participant list to each participant

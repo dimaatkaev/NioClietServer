@@ -106,7 +106,7 @@ public class Client {
     }
 
     private Message createRegisterMessage() {
-        return new Message(Message.Type.REGISTER, REGISTER_MESSAGE, name);
+        return new Message(Message.Type.REGISTER_REQUEST, REGISTER_MESSAGE, name);
     }
 
     class SocketListener extends Thread {
@@ -124,7 +124,7 @@ public class Client {
                     client.read(clientBuffer);
                     Message inMessage = Message.getMessageFromByteArray(clientBuffer.array());
                     //TODO buffered message
-                    if (inMessage.getType().equals(Message.Type.REGISTER_REQUEST)) {
+                    if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
 //                        log("please choose recipient: " + String.join(", ", chatMembers));
                     } else {

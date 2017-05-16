@@ -26,7 +26,7 @@ public class MessageRouter extends Thread {
     }
 
     public void initHandlers() {
-        handlers.put(Message.Type.REGISTER, new RegisterHandler(clients));
+        handlers.put(Message.Type.REGISTER_REQUEST, new RegisterHandler(clients));
         handlers.put(Message.Type.COMMUNICATION, new CommunicationHandler(clients));
     }
 
@@ -40,18 +40,27 @@ public class MessageRouter extends Thread {
             if (!handleMessages.isEmpty()) {
                 MessageWithSocketChannel pollValue = (MessageWithSocketChannel) handleMessages.poll();
 
+                boolean isHandled = false;
                 for (Message.Type handlerType : handlers.keySet()) {
                     if (pollValue.getMessage().getType() == handlerType) {
                         Handler handler = handlers.get(handlerType);
-                        setMessageAndLog(handler, pollValue);
+                        exeMessage(handler, pollValue);
                         executor.execute(handler);
+
+                        // FIXME: is it necessary
+                        isHandled = true;
                     }
+                }
+
+                // FIXME: is it necessary to do this check
+                if (!isHandled) {
+                    log("could not find appropriate handler to process message" + pollValue.getMessage().toString());
                 }
             }
         }
     }
 
-    private void setMessageAndLog(Handler handler, MessageWithSocketChannel pollValue) {
+    private void exeMessage(Handler handler, MessageWithSocketChannel pollValue) {
         handler.setMessage(pollValue);
         log("Register message = " + pollValue.getMessage().toString());
     }

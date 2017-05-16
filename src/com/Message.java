@@ -45,17 +45,16 @@ public class Message implements Serializable {
     }
 
     public enum Type {
-        REGISTER,
-        COMMUNICATION,
-        REGISTER_REQUEST
+        REGISTER_REQUEST,
+        REGISTER_RESPONSE,
+        COMMUNICATION
     }
 
     @Override
     public String toString() {
-        return "Message{" +
+        return "Message: " +
                 "type=" + type +
                 ", text='" + text + '\'' +
-                ", nickname='" + nickname + '\'' +
-                '}';
+                ", nickname='" + nickname + '\'';
     }
 }

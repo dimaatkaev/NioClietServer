@@ -14,22 +14,27 @@ public class Server {
 
     private MessageRouter messageRouter = new MessageRouter();
     private final static int BYTE_BUFFER_CAPACITY = 256;
+    private final static int INIT_PORT = 1111;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        new Server().serverAction();
+    public static void main(String[] args) {
+        try {
+            new Server().go();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void log(String str) {
         System.out.println(str);
     }
 
-    private void serverAction() throws IOException, ClassNotFoundException {
+    private void go() throws IOException, ClassNotFoundException {
         // Selector: multiplexor of SelectableChannel objects
         Selector selector = Selector.open(); // selector is open here
 
         // ServerSocketChannel: selectable channel for stream-oriented listening sockets
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        InetSocketAddress serverAddr = new InetSocketAddress("localhost", 1111);
+        InetSocketAddress serverAddr = new InetSocketAddress("localhost", INIT_PORT);
 
         // Binds the channel's socket to a local address and configures the socket to listen for connections
         serverSocket.bind(serverAddr);
@@ -38,7 +43,7 @@ public class Server {
         serverSocket.configureBlocking(false);
 
         int ops = serverSocket.validOps();
-        SelectionKey selectKy = serverSocket.register(selector, ops, null);
+        /*SelectionKey selectKy = */serverSocket.register(selector, ops, null);
 
         log("Start message router");
         messageRouter.start();
@@ -65,7 +70,7 @@ public class Server {
                     // Adjusts this channel's blocking mode to false
                     client.configureBlocking(false);
 
-                    // Operation-set bit for read operations
+                    // Register client socket
                     client.register(selector, SelectionKey.OP_READ);
                     log("Connection Accepted: " + client.getLocalAddress());
                 } else if (myKey.isReadable()) {
@@ -75,9 +80,13 @@ public class Server {
                     Message message = Message.getMessageFromByteArray(clientBuffer.array());
 
                     messageRouter.addMessageInQueue(message, client);
+
+                    // switch socket to write
                     client.register(selector, SelectionKey.OP_WRITE);
                 } else if (myKey.isWritable()) {
                     SocketChannel client = (SocketChannel) myKey.channel();
+
+                    // switch socket to read
                     client.register(selector, SelectionKey.OP_READ);
                 }
                 keysIterator.remove();
