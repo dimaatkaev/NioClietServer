@@ -1,13 +1,12 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageUtils;
 import com.MessageWithSocketChannel;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+
+import static com.MessageUtils.sendMessage;
 
 public class RegisterHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -30,34 +29,32 @@ public class RegisterHandler implements Handler, Runnable {
     @Override
     public void processMessage() {
         clients.put(pair.getMessage().getNickname(), pair.getSocketChannel());
-        log("new participant: " + pair.getMessage().getNickname());
+        logInfo("new participant: " + pair.getMessage().getNickname());
 
         try {
             String clientsAsString = String.join(", ", clients.keySet());
             Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
-            byte[] requestBytes = MessageUtils.getMessageAsByteArray(request);
-            ByteBuffer communicationBuffer;
-            //send chat participant list to each participant
+            // send chat participant list to each participant
             for (Map.Entry<String, SocketChannel> client : clients.entrySet()) {
                 SocketChannel socketChannel = client.getValue();
-                communicationBuffer = ByteBuffer.wrap(requestBytes);
+//                communicationBuffer = ByteBuffer.wrap(requestBytes);
                 boolean sent = true;
                 while (sent) {
+                    // FIXME is it redundant if
                     if (socketChannel.isConnected()) {
-                        socketChannel.write(communicationBuffer);
+                        sendMessage(socketChannel, request);
                         sent = false;
-                        log("sending register request message: " + request.toString() + " sent.");
+                        logInfo("List of participants: [" + request.toString() + "] was sent to [" + client.getKey() + "].");
                     }
                 }
-                communicationBuffer.clear();
             }
-        } catch (IOException e) {
-            log("ERROR register request failed");
+        } catch (Exception e) {
+            logInfo("ERROR register request failed");
             e.printStackTrace();
         }
     }
 
-    private static void log(String str) {
-        System.out.println(str);
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + " INFO " + str + ".");
     }
 }

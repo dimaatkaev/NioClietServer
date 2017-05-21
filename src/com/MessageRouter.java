@@ -62,7 +62,7 @@ public class MessageRouter extends Thread {
 
     private void exeMessage(Handler handler, MessageWithSocketChannel pollValue) {
         handler.setMessage(pollValue);
-        log("Register message = " + pollValue.getMessage().toString());
+        log("Message = " + pollValue.getMessage().toString());
     }
 
     private static void log(String str) {

@@ -7,13 +7,14 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class Server {
 
     private MessageRouter messageRouter = new MessageRouter();
-    private final static int BYTE_BUFFER_CAPACITY = 256;
     private final static int INIT_PORT = 1111;
 
     public static void main(String[] args) {
@@ -75,11 +76,8 @@ public class Server {
                     log("Connection Accepted: " + client.getLocalAddress());
                 } else if (myKey.isReadable()) {
                     SocketChannel client = (SocketChannel) myKey.channel();
-                    ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
-                    client.read(clientBuffer);
-                    Message message = MessageUtils.getMessageFromByteArray(clientBuffer.array());
-
-                    messageRouter.addMessageInQueue(message, client);
+                    Message inMessage = MessageUtils.getMessage(client);
+                    messageRouter.addMessageInQueue(inMessage, client);
 
                     // switch socket to write
                     client.register(selector, SelectionKey.OP_WRITE);

@@ -1,13 +1,13 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageUtils;
 import com.MessageWithSocketChannel;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+
+import static com.MessageUtils.sendMessage;
 
 public class CommunicationHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -30,27 +30,35 @@ public class CommunicationHandler implements Handler, Runnable {
     @Override
     public void processMessage() {
         try {
-            byte[] communicationMessage = MessageUtils.getMessageAsByteArray(message);
-            SocketChannel socketChannel = clients.get(message.getNickname());
+            String recipient = message.getNickname();
+            SocketChannel socketChannel = clients.get(recipient);
 
-            ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);
             boolean sent = true;
             while (sent) {
-                if (socketChannel.isConnected()) {
-                    socketChannel.write(communicationBuffer);
-                    //TODO Add buffer message read
+                // FIXME is it redundant if
+//                if (socketChannel.isConnected()) {
+                    sendMessage(socketChannel, message);
                     sent = false;
-                    log("sending communication message: " + message + " sent.");
-                }
+                    logInfo("Communication message: " + message + " was sent to " + recipient + ".");
+//                }
             }
-            communicationBuffer.clear();
         } catch (IOException e) {
-            log("ERROR communication message failed");
+            logWarn("Communication message failed due connection problem. Message: " + message);
             e.printStackTrace();
+        } catch (Exception e) {
+            logError("Communication message failed. Message: " + message);
         }
     }
 
-    private static void log(String str) {
-        System.out.println(str);
+    private static void logWarn(String logline) {
+        System.out.println(CommunicationHandler.class.getName() + " WARN  [" + logline + "]");
+    }
+
+    private static void logInfo(String logline) {
+        System.out.println(CommunicationHandler.class.getName() + " INFO  [" + logline + "]");
+    }
+
+    private static void logError(String logline) {
+        System.out.println(CommunicationHandler.class.getName() + " ERROR  [" + logline + "]");
     }
 }
