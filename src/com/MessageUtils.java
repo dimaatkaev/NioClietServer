@@ -16,7 +16,35 @@ public class MessageUtils {
     private static final int BYTE_BUFFER_CAPACITY = 256;
     private static final byte TERMINATOR = 30;
 
-    public static byte[] getMessageAsByteArray(Message message) throws IOException {
+    public static Message getMessage(SocketChannel client) throws IOException, ClassNotFoundException {
+        ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
+        List<Byte[]> messageAsList = new ArrayList<>();
+        while (true) {
+            client.read(clientBuffer);
+            Byte[] part = MessageUtils.toObjByte(clientBuffer.array());
+            messageAsList.add(part);
+            if (findTerminatorPosition(part) == -1) {
+                clientBuffer.clear();
+            } else {
+                clientBuffer.clear();
+                break;
+            }
+        }
+
+        return MessageUtils.collectMessage(messageAsList);
+    }
+
+    public static void sendMessage(SocketChannel client, Message originMessage) throws IOException {
+        List<Byte[]> message = MessageUtils.splitMessage(originMessage);
+
+        for (Byte[] part : message) {
+            ByteBuffer communicationBuffer = ByteBuffer.wrap(MessageUtils.toPrimByte(part));
+            client.write(communicationBuffer);
+            communicationBuffer.clear();
+        }
+    }
+
+    private static byte[] getMessageAsByteArray(Message message) throws IOException {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bo);
         out.writeObject(message);
@@ -24,9 +52,9 @@ public class MessageUtils {
     }
 
     public static Message getMessageFromByteArray(byte[] array) throws IOException, ClassNotFoundException {
-            ByteArrayInputStream bi = new ByteArrayInputStream(array);
-            ObjectInputStream in = new ObjectInputStream(bi);
-            return (Message) in.readObject();
+        ByteArrayInputStream bi = new ByteArrayInputStream(array);
+        ObjectInputStream in = new ObjectInputStream(bi);
+        return (Message) in.readObject();
     }
 
     public static List<Byte[]> splitByteArrayToParts(Byte[] originArray) throws IOException {
@@ -98,38 +126,16 @@ public class MessageUtils {
         return bytes;
     }
 
-    private static void logError(String logline) {
-        System.out.println(MessageUtils.class.getName() + " ERROR [" + logline + "]");
-    }
+//    private static void logError(String logline) {
+//        System.out.println(MessageUtils.class.getName() + " ERROR: " + logline + ".");
+//    }
 
-    public static Message getMessage(SocketChannel client) throws IOException, ClassNotFoundException {
-        ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
-        List<Byte[]> messageAsList = new ArrayList<>();
-        while (true) {
-            client.read(clientBuffer);
-            Byte[] part = MessageUtils.toObjByte(clientBuffer.array());
-            messageAsList.add(part);
-            if (findTerminatorPosition(part) == -1) {
-                clientBuffer.clear();
-            } else {
-                clientBuffer.clear();
-                break;
-            }
-        }
-
-        return MessageUtils.collectMessage(messageAsList);
-    }
-
-    public static void sendMessage(SocketChannel client, Message originMessage) throws IOException {
-        List<Byte[]> message = MessageUtils.splitMessage(originMessage);
-
-        for (Byte[] part : message) {
-            ByteBuffer communicationBuffer = ByteBuffer.wrap(MessageUtils.toPrimByte(part));
-            client.write(communicationBuffer);
-            communicationBuffer.clear();
-        }
-    }
-
+    /**
+     * Find terminator in the byte array.
+     *
+     * @param array
+     * @return -1 if could not find
+     */
     private static int findTerminatorPosition(Byte[] array) {
         String str = new String(toPrimByte(array));
         return str.indexOf(30);

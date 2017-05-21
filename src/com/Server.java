@@ -25,10 +25,6 @@ public class Server {
         }
     }
 
-    private static void log(String str) {
-        System.out.println(str);
-    }
-
     private void go() throws IOException, ClassNotFoundException {
         // Selector: multiplexor of SelectableChannel objects
         Selector selector = Selector.open(); // selector is open here
@@ -46,14 +42,14 @@ public class Server {
         int ops = serverSocket.validOps();
         /*SelectionKey selectKy = */serverSocket.register(selector, ops, null);
 
-        log("Start message router");
+        logInfo("Start message router");
         messageRouter.start();
 
         // Infinite loop..
         // Keep server running
         while (true) {
 
-            log("i'm a server and i'm waiting for new connection and buffer select...");
+            logInfo("i'm a server and i'm waiting for new connection and buffer select...");
             // Selects a set of keys whose corresponding channels are ready for I/O operations
             selector.select();
 
@@ -73,7 +69,7 @@ public class Server {
 
                     // Register client socket
                     client.register(selector, SelectionKey.OP_READ);
-                    log("Connection Accepted: " + client.getLocalAddress());
+                    logInfo("Connection Accepted: " + client.getLocalAddress());
                 } else if (myKey.isReadable()) {
                     SocketChannel client = (SocketChannel) myKey.channel();
                     Message inMessage = MessageUtils.getMessage(client);
@@ -90,5 +86,9 @@ public class Server {
                 keysIterator.remove();
             }
         }
+    }
+
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + " INFO: " + str + ".");
     }
 }

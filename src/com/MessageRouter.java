@@ -54,7 +54,7 @@ public class MessageRouter extends Thread {
 
                 // FIXME: is it necessary to do this check
                 if (!isHandled) {
-                    log("could not find appropriate handler to process message" + pollValue.getMessage().toString());
+                    logInfo("Could not find appropriate handler to process message" + pollValue.getMessage().toString());
                 }
             }
         }
@@ -62,10 +62,10 @@ public class MessageRouter extends Thread {
 
     private void exeMessage(Handler handler, MessageWithSocketChannel pollValue) {
         handler.setMessage(pollValue);
-        log("Message = " + pollValue.getMessage().toString());
+        logInfo("Execute " + pollValue.getMessage());
     }
 
-    private static void log(String str) {
-        System.out.println(str);
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + "INFO: " + str + ".");
     }
 }

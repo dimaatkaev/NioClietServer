@@ -40,21 +40,22 @@ public class RegisterHandler implements Handler, Runnable {
 //                communicationBuffer = ByteBuffer.wrap(requestBytes);
                 boolean sent = true;
                 while (sent) {
-                    // FIXME is it redundant if
-                    if (socketChannel.isConnected()) {
-                        sendMessage(socketChannel, request);
-                        sent = false;
-                        logInfo("List of participants: [" + request.toString() + "] was sent to [" + client.getKey() + "].");
-                    }
+                    sendMessage(socketChannel, request);
+                    sent = false;
+                    logInfo("List of participants: [" + request.toString() + "] was sent to [" + client.getKey() + "]");
                 }
             }
         } catch (Exception e) {
-            logInfo("ERROR register request failed");
+            logError("Register request failed.");
             e.printStackTrace();
         }
     }
 
     private void logInfo(String str) {
-        System.out.println(this.getClass().getName() + " INFO " + str + ".");
+        System.out.println(this.getClass().getName() + " INFO: " + str + ".");
+    }
+
+    private void logError(String str) {
+        System.out.println(this.getClass().getName() + " ERROR: " + str + ".");
     }
 }

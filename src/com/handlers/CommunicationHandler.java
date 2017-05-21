@@ -35,12 +35,9 @@ public class CommunicationHandler implements Handler, Runnable {
 
             boolean sent = true;
             while (sent) {
-                // FIXME is it redundant if
-//                if (socketChannel.isConnected()) {
                     sendMessage(socketChannel, message);
                     sent = false;
                     logInfo("Communication message: " + message + " was sent to " + recipient + ".");
-//                }
             }
         } catch (IOException e) {
             logWarn("Communication message failed due connection problem. Message: " + message);
@@ -51,14 +48,14 @@ public class CommunicationHandler implements Handler, Runnable {
     }
 
     private static void logWarn(String logline) {
-        System.out.println(CommunicationHandler.class.getName() + " WARN  [" + logline + "]");
+        System.out.println(CommunicationHandler.class.getName() + " WARN: " + logline + ".");
     }
 
     private static void logInfo(String logline) {
-        System.out.println(CommunicationHandler.class.getName() + " INFO  [" + logline + "]");
+        System.out.println(CommunicationHandler.class.getName() + " INFO: [" + logline + ".");
     }
 
     private static void logError(String logline) {
-        System.out.println(CommunicationHandler.class.getName() + " ERROR  [" + logline + "]");
+        System.out.println(CommunicationHandler.class.getName() + " ERROR: " + logline + ".");
     }
 }
