@@ -1,10 +1,5 @@
 package com;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class Message implements Serializable {
@@ -17,19 +12,6 @@ public class Message implements Serializable {
         this.type = type;
         this.text = text;
         this.nickname = nickname;
-    }
-
-    public static byte[] getMessageAsByteArray(Message message) throws IOException {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(bo);
-        out.writeObject(message);
-        return bo.toByteArray();
-    }
-
-    public static Message getMessageFromByteArray(byte[] array) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bi = new ByteArrayInputStream(array);
-        ObjectInputStream in = new ObjectInputStream(bi);
-        return (Message) in.readObject();
     }
 
     public Type getType() {
@@ -45,17 +27,16 @@ public class Message implements Serializable {
     }
 
     public enum Type {
-        REGISTER,
-        COMMUNICATION,
-        REGISTER_REQUEST
+        REGISTER_REQUEST,
+        REGISTER_RESPONSE,
+        COMMUNICATION
     }
 
     @Override
     public String toString() {
-        return "Message{" +
+        return "Message: " +
                 "type=" + type +
                 ", text='" + text + '\'' +
-                ", nickname='" + nickname + '\'' +
-                '}';
+                ", nickname='" + nickname + '\'';
     }
 }

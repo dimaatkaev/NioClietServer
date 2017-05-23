@@ -7,29 +7,31 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class Server {
 
     private MessageRouter messageRouter = new MessageRouter();
-    private final static int BYTE_BUFFER_CAPACITY = 256;
+    private final static int INIT_PORT = 1111;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        new Server().serverAction();
+    public static void main(String[] args) {
+        try {
+            new Server().go();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void log(String str) {
-        System.out.println(str);
-    }
-
-    private void serverAction() throws IOException, ClassNotFoundException {
+    private void go() throws IOException, ClassNotFoundException {
         // Selector: multiplexor of SelectableChannel objects
         Selector selector = Selector.open(); // selector is open here
 
         // ServerSocketChannel: selectable channel for stream-oriented listening sockets
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        InetSocketAddress serverAddr = new InetSocketAddress("localhost", 1111);
+        InetSocketAddress serverAddr = new InetSocketAddress("localhost", INIT_PORT);
 
         // Binds the channel's socket to a local address and configures the socket to listen for connections
         serverSocket.bind(serverAddr);
@@ -38,16 +40,16 @@ public class Server {
         serverSocket.configureBlocking(false);
 
         int ops = serverSocket.validOps();
-        SelectionKey selectKy = serverSocket.register(selector, ops, null);
+        /*SelectionKey selectKy = */serverSocket.register(selector, ops, null);
 
-        log("Start message router");
+        logInfo("Start message router");
         messageRouter.start();
 
         // Infinite loop..
         // Keep server running
         while (true) {
 
-            log("i'm a server and i'm waiting for new connection and buffer select...");
+            logInfo("i'm a server and i'm waiting for new connection and buffer select...");
             // Selects a set of keys whose corresponding channels are ready for I/O operations
             selector.select();
 
@@ -65,23 +67,28 @@ public class Server {
                     // Adjusts this channel's blocking mode to false
                     client.configureBlocking(false);
 
-                    // Operation-set bit for read operations
+                    // Register client socket
                     client.register(selector, SelectionKey.OP_READ);
-                    log("Connection Accepted: " + client.getLocalAddress());
+                    logInfo("Connection Accepted: " + client.getLocalAddress());
                 } else if (myKey.isReadable()) {
                     SocketChannel client = (SocketChannel) myKey.channel();
-                    ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
-                    client.read(clientBuffer);
-                    Message message = Message.getMessageFromByteArray(clientBuffer.array());
+                    Message inMessage = MessageUtils.getMessage(client);
+                    messageRouter.addMessageInQueue(inMessage, client);
 
-                    messageRouter.addMessageInQueue(message, client);
+                    // switch socket to write
                     client.register(selector, SelectionKey.OP_WRITE);
                 } else if (myKey.isWritable()) {
                     SocketChannel client = (SocketChannel) myKey.channel();
+
+                    // switch socket to read
                     client.register(selector, SelectionKey.OP_READ);
                 }
                 keysIterator.remove();
             }
         }
+    }
+
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + " INFO: " + str + ".");
     }
 }

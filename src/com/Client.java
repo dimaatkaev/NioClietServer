@@ -4,11 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.MessageUtils.sendMessage;
 
 public class Client {
 
@@ -19,12 +20,12 @@ public class Client {
     private static final String REGISTER_MESSAGE = "register";
     private static final String EXIT_PHRASE = "exit";
     private static final int WAIT_TIME = 1000;
-    private static final int BYTE_BUFFER_CAPACITY = 256;
+    private static final int INIT_PORT = 1111;
 
     private boolean isFinish = false;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        new Client().clientAction();
+        new Client().go();
     }
 
     private static void log(String str) {
@@ -39,55 +40,59 @@ public class Client {
         this.chatMembers = chatMembers;
     }
 
-    private void clientAction() throws IOException, ClassNotFoundException, InterruptedException {
-        InetSocketAddress serverAddr = new InetSocketAddress("localhost", 1111);
-        SocketChannel client = connectToServer(serverAddr);
+    private void go() throws IOException, ClassNotFoundException, InterruptedException {
+        InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
+        SocketChannel client = connectToServer(serverAdr);
 
-        log("Connecting to com.Server on port 1111...");
+        log("Connecting to com.Server on port " + INIT_PORT + "...");
 
-        //send register message
-        log("Please, enter your nickname");
-        setName(readLine());
-
-        byte[] message = Message.getMessageAsByteArray(createRegisterMessage());
-        ByteBuffer buffer = ByteBuffer.wrap(message);
-        client.write(buffer);
-        log("sent register message, name = " + name);
-        buffer.clear();
+        sendRegisterMessage(client);
 
         Thread listener = new SocketListener(client);
         listener.start();
 
+        // waiting for register request
+        while (chatMembers.isEmpty()) {
+            Thread.sleep(500);
+        }
+
+        askCommunicationMessage(client, listener);
+
+        client.close();
+    }
+
+    private void askCommunicationMessage(SocketChannel client, Thread listener) throws IOException {
         while (true) {
             if (isFinish) {
                 listener.interrupt();
                 client.close();
                 break;
             }
+
+            log("please choose recipient: " + String.join(", ", chatMembers));
             String recipient = readLine();
             if (!chatMembers.contains(recipient)) {
                 log("There is no recipient with entered name");
                 continue;
             }
-            System.out.println("Please write message");
+
+            log("Please write message");
             String text = readLine();
-            byte[] communicationMessage = Message.getMessageAsByteArray(new Message(Message.Type.COMMUNICATION, text, recipient));
-            ByteBuffer communicationBuffer = ByteBuffer.wrap(communicationMessage);
-            //TODO Add buffer to split message
-            client.write(communicationBuffer);
-            communicationBuffer.clear();
+            sendMessage(client, new Message(Message.Type.COMMUNICATION, text, recipient));
             log("sent text = " + text);
         }
-        client.close();
+    }
+
+    private void sendRegisterMessage(SocketChannel client) throws IOException {
+        log("Please, enter your nickname");
+        setName(readLine());
+        sendMessage(client, new Message(Message.Type.REGISTER_REQUEST, REGISTER_MESSAGE, name));
+        log("sent register message, name = " + name);
     }
 
     private List<String> getChatMembers(String list) {
         String[] strings = list.split(", ");
         return Arrays.asList(strings);
-    }
-
-    private Message createRegisterMessage() {
-        return new Message(Message.Type.REGISTER, REGISTER_MESSAGE, name);
     }
 
     class SocketListener extends Thread {
@@ -101,17 +106,13 @@ public class Client {
         public void run() {
             while (!isInterrupted()) {
                 try {
-                    ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
-                    client.read(clientBuffer);
-                    Message inMessage = Message.getMessageFromByteArray(clientBuffer.array());
-                    //TODO buffered message
-                    if (inMessage.getType().equals(Message.Type.REGISTER_REQUEST)) {
+                    Message inMessage = MessageUtils.getMessage(client);
+
+                    if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
-                        log("please choose recipient: " + String.join(", ", chatMembers));
                     } else {
                         log("incoming message: " + inMessage.getText());
                     }
-                    clientBuffer.clear();
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {

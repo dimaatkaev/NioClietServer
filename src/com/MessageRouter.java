@@ -26,7 +26,7 @@ public class MessageRouter extends Thread {
     }
 
     public void initHandlers() {
-        handlers.put(Message.Type.REGISTER, new RegisterHandler(clients));
+        handlers.put(Message.Type.REGISTER_REQUEST, new RegisterHandler(clients));
         handlers.put(Message.Type.COMMUNICATION, new CommunicationHandler(clients));
     }
 
@@ -39,27 +39,33 @@ public class MessageRouter extends Thread {
         while (true) {
             if (!handleMessages.isEmpty()) {
                 MessageWithSocketChannel pollValue = (MessageWithSocketChannel) handleMessages.poll();
-                if (pollValue.getMessage().getType() == Message.Type.REGISTER) {
-                    Handler handler = handlers.get(Message.Type.REGISTER);
-                    setMessageAndLog(handler, pollValue);
-                    executor.execute(handler);
-                } else if (pollValue.getMessage().getType() == Message.Type.COMMUNICATION) {
-                    Handler handler = handlers.get(Message.Type.COMMUNICATION);
-                    setMessageAndLog(handler, pollValue);
-                    executor.execute(handler);
-                } else {
-                    throw new IllegalArgumentException("Incorrect handler type.");
+
+                boolean isHandled = false;
+                for (Message.Type handlerType : handlers.keySet()) {
+                    if (pollValue.getMessage().getType() == handlerType) {
+                        Handler handler = handlers.get(handlerType);
+                        exeMessage(handler, pollValue);
+                        executor.execute(handler);
+
+                        // FIXME: is it necessary
+                        isHandled = true;
+                    }
+                }
+
+                // FIXME: is it necessary to do this check
+                if (!isHandled) {
+                    logInfo("Could not find appropriate handler to process message" + pollValue.getMessage().toString());
                 }
             }
         }
     }
 
-    private void setMessageAndLog(Handler handler, MessageWithSocketChannel pollValue) {
+    private void exeMessage(Handler handler, MessageWithSocketChannel pollValue) {
         handler.setMessage(pollValue);
-        log("Register message = " + pollValue.getMessage().toString());
+        logInfo("Execute " + pollValue.getMessage());
     }
 
-    private static void log(String str) {
-        System.out.println(str);
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + "INFO: " + str + ".");
     }
 }
