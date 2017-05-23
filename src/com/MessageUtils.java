@@ -54,7 +54,13 @@ public class MessageUtils {
     public static Message getMessageFromByteArray(byte[] array) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bi = new ByteArrayInputStream(array);
         ObjectInputStream in = new ObjectInputStream(bi);
-        return (Message) in.readObject();
+        try {
+            return (Message) in.readObject();
+        } catch (Exception e) {
+            logError("Could not deserialize message.");
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static List<Byte[]> splitByteArrayToParts(Byte[] originArray) throws IOException {
@@ -126,9 +132,9 @@ public class MessageUtils {
         return bytes;
     }
 
-//    private static void logError(String logline) {
-//        System.out.println(MessageUtils.class.getName() + " ERROR: " + logline + ".");
-//    }
+    private static void logError(String logline) {
+        System.out.println(MessageUtils.class.getName() + " ERROR: " + logline + ".");
+    }
 
     /**
      * Find terminator in the byte array.

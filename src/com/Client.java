@@ -28,10 +28,6 @@ public class Client {
         new Client().go();
     }
 
-    private static void log(String str) {
-        System.out.println(str);
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -44,7 +40,7 @@ public class Client {
         InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
         SocketChannel client = connectToServer(serverAdr);
 
-        log("Connecting to com.Server on port " + INIT_PORT + "...");
+        logInfo("Connecting to com.Server on port " + INIT_PORT + "...");
 
         sendRegisterMessage(client);
 
@@ -69,25 +65,25 @@ public class Client {
                 break;
             }
 
-            log("please choose recipient: " + String.join(", ", chatMembers));
+            logInfo("please choose recipient: " + String.join(", ", chatMembers));
             String recipient = readLine();
             if (!chatMembers.contains(recipient)) {
-                log("There is no recipient with entered name");
+                logInfo("There is no recipient with entered name");
                 continue;
             }
 
-            log("Please write message");
+            logInfo("Please write message");
             String text = readLine();
             sendMessage(client, new Message(Message.Type.COMMUNICATION, text, recipient));
-            log("sent text = " + text);
+            logInfo("sent text = " + text);
         }
     }
 
     private void sendRegisterMessage(SocketChannel client) throws IOException {
-        log("Please, enter your nickname");
+        logInfo("Please, enter your nickname");
         setName(readLine());
         sendMessage(client, new Message(Message.Type.REGISTER_REQUEST, REGISTER_MESSAGE, name));
-        log("sent register message, name = " + name);
+        logInfo("sent register message, name = " + name);
     }
 
     private List<String> getChatMembers(String list) {
@@ -111,13 +107,14 @@ public class Client {
                     if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
                     } else {
-                        log("incoming message: " + inMessage.getText());
+                        logInfo("incoming message: " + inMessage.getText());
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logInfo("Connection problemm. " + e.getMessage() + e.getStackTrace());
                 } catch (ClassNotFoundException e) {
-                    log("ERROR income message failed");
-                    e.printStackTrace();
+                    logError("Could not detect type of message. " + e.getStackTrace());
+                } catch (Exception e) {
+                    logError("Unknown exception: " + e.getMessage() + e.getStackTrace());
                 }
             }
         }
@@ -138,10 +135,18 @@ public class Client {
                 client = SocketChannel.open(serverAddr);
                 break;
             } catch (IOException e) {
-                log("Can not connect to server ...");
+                logInfo("Can not connect to server ...");
                 Thread.sleep(WAIT_TIME);
             }
         }
         return client;
+    }
+
+    private void logInfo(String str) {
+        System.out.println(this.getClass().getName() + " INFO: " + str + ".");
+    }
+
+    private void logError(String str) {
+        System.out.println(this.getClass().getName() + " ERROR: " + str + ".");
     }
 }
