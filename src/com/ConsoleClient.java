@@ -11,7 +11,7 @@ import java.util.List;
 
 import static com.MessageUtils.sendMessage;
 
-public class Client {
+public class ConsoleClient {
 
     private String name;
     private List<String> chatMembers = new ArrayList<>();
@@ -25,7 +25,7 @@ public class Client {
     private boolean isFinish = false;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        new Client().go();
+        new ConsoleClient().go();
     }
 
     public void setName(String name) {
@@ -59,12 +59,6 @@ public class Client {
 
     private void askCommunicationMessage(SocketChannel client, Thread listener) throws IOException {
         while (true) {
-            if (isFinish) {
-                listener.interrupt();
-                client.close();
-                break;
-            }
-
             logInfo("please choose recipient: " + String.join(", ", chatMembers));
             String recipient = readLine();
             if (!chatMembers.contains(recipient)) {
@@ -72,8 +66,21 @@ public class Client {
                 continue;
             }
 
+            if (isFinish) {
+                listener.interrupt();
+                client.close();
+                break;
+            }
+
             logInfo("Please write message");
             String text = readLine();
+
+            if (isFinish) {
+                listener.interrupt();
+                client.close();
+                break;
+            }
+
             sendMessage(client, new Message(Message.Type.COMMUNICATION, text, recipient));
             logInfo("sent text = " + text);
         }
@@ -110,7 +117,7 @@ public class Client {
                         logInfo("incoming message: " + inMessage.getText());
                     }
                 } catch (IOException e) {
-                    logInfo("Connection problemm. " + e.getMessage() + e.getStackTrace());
+                    logInfo("Connection problem.");
                 } catch (ClassNotFoundException e) {
                     logError("Could not detect type of message. " + e.getStackTrace());
                 } catch (Exception e) {
