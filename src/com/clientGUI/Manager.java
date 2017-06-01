@@ -68,7 +68,8 @@ public class Manager {
 
     public List<String> getParticipants() {
         // remove own name
-        participants.remove(nickname);
+        // TODO uncomment removing itself
+//        participants.remove(nickname);
         return participants;
     }
 
