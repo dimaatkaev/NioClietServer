@@ -16,7 +16,8 @@ public class Manager {
     private static Manager instance;
     private String nickname;
     private List<String> participants = new ArrayList<>();
-    SocketChannel clientSocket;
+    private SocketChannel clientSocket;
+    private List<Message> incomingMessages = new ArrayList<>();
 
     private static final String REGISTER_MESSAGE = "register";
     private static final int WAIT_TIME = 1000;
@@ -120,6 +121,7 @@ public class Manager {
                         setParticipants(Arrays.asList(newParticipants));
                     } else {
                         logInfo("incoming message: " + inMessage.getText());
+                        incomingMessages.add(inMessage);
                     }
                 } catch (IOException e) {
                     logInfo("Connection problem.");
@@ -130,6 +132,10 @@ public class Manager {
                 }
             }
         }
+    }
+
+    public List<Message> getIncomingMessages() {
+        return incomingMessages;
     }
 
     private void logInfo(String str) {

@@ -39,4 +39,8 @@ public class Message implements Serializable {
                 ", text='" + text + '\'' +
                 ", nickname='" + nickname + '\'';
     }
+
+    public String getView() {
+        return getNickname() + " : " + getText();
+    }
 }
