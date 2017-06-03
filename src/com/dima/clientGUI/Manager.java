@@ -1,7 +1,8 @@
-package com.clientGUI;
+package com.dima.clientGUI;
 
-import com.Message;
-import com.MessageUtils;
+import com.dima.messaging.Message;
+import com.dima.messaging.MessageFactory;
+import com.dima.messaging.MessageUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -10,11 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.MessageUtils.sendMessage;
+import static com.dima.messaging.MessageUtils.sendMessage;
 
 public class Manager {
     private static Manager instance;
-    private String nickname;
+    private String sender;
     private List<String> participants = new ArrayList<>();
     private SocketChannel clientSocket;
     private List<Message> incomingMessages = new ArrayList<>();
@@ -35,15 +36,15 @@ public class Manager {
     }
 
     public void sendRegisterMessage() throws IOException {
-        logInfo("Please, enter your nickname");
-        if (getNickname() != null) {
-            setNickname(getNickname());
+        logInfo("Please, enter your sender");
+        if (getSender() != null) {
+            setSender(getSender());
         } else {
             throw new RuntimeException("Nickname required");
         }
-        Message registerMessage = new Message(Message.Type.REGISTER_REQUEST, REGISTER_MESSAGE, nickname);
+        Message registerMessage = MessageFactory.getRegisterRequestMessage(sender);
         sendMessage(clientSocket, registerMessage);
-        logInfo("sent register message, name = " + getNickname());
+        logInfo("sent register message, name = " + getSender());
 
         // start listen for messages
         Thread listener = new Manager.SocketListener(clientSocket);
@@ -55,22 +56,23 @@ public class Manager {
             logInfo("There is no recipient with entered name");
         }
 
-        sendMessage(clientSocket, new Message(Message.Type.COMMUNICATION, text, recipient));
-        logInfo("send text = " + text);
+        Message communicationMessage = MessageFactory.getCommunicationMessage(text, sender, recipient);
+        sendMessage(clientSocket, communicationMessage);
+        logInfo("sending " + communicationMessage.toString());
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getSender() {
+        return sender;
     }
 
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 
     public List<String> getParticipants() {
         // remove own name
         // TODO uncomment removing itself
-//        participants.remove(nickname);
+//        participants.remove(sender);
         return participants;
     }
 
@@ -83,9 +85,9 @@ public class Manager {
             InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
             SocketChannel client = connectToServer(serverAdr);
             this.clientSocket = client;
-            logInfo("Connecting to com.Server on port " + INIT_PORT + "...");
+            logInfo("Connecting to com.dima.Server on port " + INIT_PORT + "...");
         } catch (InterruptedException e) {
-            throw new RuntimeException("Connecting to com.Server on port " + INIT_PORT + " failed.");
+            throw new RuntimeException("Connecting to com.dima.Server on port " + INIT_PORT + " failed.");
         }
     }
 

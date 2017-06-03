@@ -1,6 +1,6 @@
-package com.handlers;
+package com.dima.handlers;
 
-import com.MessageWithSocketChannel;
+import com.dima.MessageWithSocketChannel;
 
 public interface Handler extends Runnable {
     void processMessage();

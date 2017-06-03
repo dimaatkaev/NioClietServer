@@ -1,4 +1,4 @@
-package com;
+package com.dima.messaging;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

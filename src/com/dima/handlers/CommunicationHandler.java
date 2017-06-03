@@ -1,13 +1,13 @@
-package com.handlers;
+package com.dima.handlers;
 
-import com.Message;
-import com.MessageWithSocketChannel;
+import com.dima.messaging.Message;
+import com.dima.MessageWithSocketChannel;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
-import static com.MessageUtils.sendMessage;
+import static com.dima.messaging.MessageUtils.sendMessage;
 
 public class CommunicationHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -30,7 +30,7 @@ public class CommunicationHandler implements Handler, Runnable {
     @Override
     public void processMessage() {
         try {
-            String recipient = message.getNickname();
+            String recipient = message.getRecipient();
             SocketChannel socketChannel = clients.get(recipient);
 
             boolean sent = true;
@@ -44,6 +44,7 @@ public class CommunicationHandler implements Handler, Runnable {
             e.printStackTrace();
         } catch (Exception e) {
             logError("Communication message failed. Message: " + message);
+            e.printStackTrace();
         }
     }
 

@@ -1,4 +1,8 @@
-package com;
+package com.dima;
+
+import com.dima.messaging.Message;
+import com.dima.messaging.MessageFactory;
+import com.dima.messaging.MessageUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,11 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.MessageUtils.sendMessage;
+import static com.dima.messaging.MessageUtils.sendMessage;
 
 public class ConsoleClient {
 
-    private String name;
+    private String sender;
     private List<String> chatMembers = new ArrayList<>();
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -28,8 +32,8 @@ public class ConsoleClient {
         new ConsoleClient().go();
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSender(String sender) {
+        this.sender = sender;
     }
 
     public void setChatMembers(List<String> chatMembers) {
@@ -40,7 +44,7 @@ public class ConsoleClient {
         InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
         SocketChannel client = connectToServer(serverAdr);
 
-        logInfo("Connecting to com.Server on port " + INIT_PORT + "...");
+        logInfo("Connecting to com.dima.Server on port " + INIT_PORT + "...");
 
         sendRegisterMessage(client);
 
@@ -62,7 +66,7 @@ public class ConsoleClient {
             logInfo("please choose recipient: " + String.join(", ", chatMembers));
             String recipient = readLine();
             if (!chatMembers.contains(recipient)) {
-                logInfo("There is no recipient with entered name");
+                logInfo("There is no recipient with entered sender");
                 continue;
             }
 
@@ -81,16 +85,17 @@ public class ConsoleClient {
                 break;
             }
 
-            sendMessage(client, new Message(Message.Type.COMMUNICATION, text, recipient));
+            sendMessage(client, MessageFactory.getCommunicationMessage(text, sender, recipient));
+//            sendMessage(client, new Message(Message.Type.COMMUNICATION, text, recipient));
             logInfo("sent text = " + text);
         }
     }
 
     private void sendRegisterMessage(SocketChannel client) throws IOException {
         logInfo("Please, enter your nickname");
-        setName(readLine());
-        sendMessage(client, new Message(Message.Type.REGISTER_REQUEST, REGISTER_MESSAGE, name));
-        logInfo("sent register message, name = " + name);
+        setSender(readLine());
+        sendMessage(client, MessageFactory.getRegisterRequestMessage(sender));
+        logInfo("sent register message, sender = " + sender);
     }
 
     private List<String> getChatMembers(String list) {

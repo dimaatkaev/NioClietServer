@@ -1,8 +1,9 @@
-package com;
+package com.dima;
 
-import com.handlers.CommunicationHandler;
-import com.handlers.Handler;
-import com.handlers.RegisterHandler;
+import com.dima.handlers.CommunicationHandler;
+import com.dima.handlers.Handler;
+import com.dima.handlers.RegisterHandler;
+import com.dima.messaging.Message;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;

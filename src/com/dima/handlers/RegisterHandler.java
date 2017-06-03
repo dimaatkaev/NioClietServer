@@ -1,12 +1,13 @@
-package com.handlers;
+package com.dima.handlers;
 
-import com.Message;
-import com.MessageWithSocketChannel;
+import com.dima.messaging.Message;
+import com.dima.MessageWithSocketChannel;
+import com.dima.messaging.MessageFactory;
 
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
-import static com.MessageUtils.sendMessage;
+import static com.dima.messaging.MessageUtils.sendMessage;
 
 public class RegisterHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -28,12 +29,13 @@ public class RegisterHandler implements Handler, Runnable {
 
     @Override
     public void processMessage() {
-        clients.put(pair.getMessage().getNickname(), pair.getSocketChannel());
-        logInfo("new participant: " + pair.getMessage().getNickname());
+        clients.put(pair.getMessage().getSender(), pair.getSocketChannel());
+        logInfo("new participant: " + pair.getMessage().getSender());
 
         try {
             String clientsAsString = String.join(", ", clients.keySet());
-            Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
+//            Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
+            Message request = MessageFactory.getRegisterResponse(clientsAsString);
             // send chat participant list to each participant
             for (Map.Entry<String, SocketChannel> client : clients.entrySet()) {
                 SocketChannel socketChannel = client.getValue();

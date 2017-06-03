@@ -1,4 +1,4 @@
-package com;
+package com.dima.messaging;
 
 import java.io.Serializable;
 
@@ -6,12 +6,14 @@ public class Message implements Serializable {
 
     private final Type type;
     private final String text;
-    private final String nickname;
+    private final String sender;
+    private final String recipient;
 
-    public Message(Type type, String text, String nickname) {
+    public Message(Type type, String text, String sender, String recipient) {
         this.type = type;
         this.text = text;
-        this.nickname = nickname;
+        this.sender = sender;
+        this.recipient = recipient;
     }
 
     public Type getType() {
@@ -22,8 +24,12 @@ public class Message implements Serializable {
         return text;
     }
 
-    public String getNickname() {
-        return nickname;
+    public String getSender() {
+        return sender;
+    }
+
+    public String getRecipient() {
+        return recipient;
     }
 
     public enum Type {
@@ -37,10 +43,10 @@ public class Message implements Serializable {
         return "Message: " +
                 "type=" + type +
                 ", text='" + text + '\'' +
-                ", nickname='" + nickname + '\'';
+                ", sender='" + sender + '\'';
     }
 
     public String getView() {
-        return getNickname() + " : " + getText();
+        return getSender() + " : " + getText();
     }
 }

@@ -1,6 +1,6 @@
-package com.clientGUI;
+package com.dima.clientGUI;
 
-import com.Message;
+import com.dima.messaging.Message;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -26,6 +26,9 @@ public class ClientInterface {
     Manager manager = Manager.getInstance();
     List<String> participants = manager.getParticipants();
     List<Message> incomingMessages = manager.getIncomingMessages();
+
+    int communicationMessagesCount = 0;
+    int participantsCount = 0;
 
     public static void main(String[] args) throws InterruptedException {
         new ClientInterface().go();
@@ -73,13 +76,14 @@ public class ClientInterface {
             do {
                 Thread.sleep(500);
                 System.out.println("sleeping period was 500.");
-            } while (manager.getNickname() == null);
+            } while (manager.getSender() == null);
 
             manager.sendRegisterMessage();
 
             // wait for response
             Thread.sleep(1000);
             participantsList.setListData(manager.getParticipants().toArray());
+            participantsCount = manager.getParticipants().size();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -108,7 +112,7 @@ public class ClientInterface {
         sendButton.addActionListener(e -> {
             String nickName;
             nickName = nickNameField.getText();
-            manager.setNickname(nickName);
+            manager.setSender(nickName);
             askFrame.setVisible(false);
         });
 
@@ -122,24 +126,21 @@ public class ClientInterface {
 
     class UpdateLookUp extends Thread {
 
-        int messagesCount = 0;
-        int participantsCount = 0;
 
         @Override
         public void run() {
             while (!isInterrupted()) {
                 try {
                     Thread.sleep(1000);
-//                    if (participants.size() > participantsCount) {
-//
-//                        participantsCount++;
-//                        // TODO update participants
-//                    }
+                    if (participants.size() > participantsCount) {
+                        participantsList.setListData(participants.toArray());
+                        participantsCount = participants.size();
+                    }
 
-                    if (incomingMessages.size() > messagesCount) {
+                    if (incomingMessages.size() > communicationMessagesCount) {
                         if (!incomingMessages.isEmpty()) {
                             incoming.append(incomingMessages.get(incomingMessages.size() - 1).getView() + "\n");
-                            messagesCount++;
+                            communicationMessagesCount++;
                         }
                     }
                 } catch (InterruptedException e) {

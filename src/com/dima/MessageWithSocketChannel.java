@@ -1,4 +1,6 @@
-package com;
+package com.dima;
+
+import com.dima.messaging.Message;
 
 import java.nio.channels.SocketChannel;
 
