@@ -121,6 +121,7 @@ public class Manager {
                     if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         String[] newParticipants = inMessage.getText().split(",");
                         setParticipants(Arrays.asList(newParticipants));
+                        logInfo("Register response come: " + inMessage);
                     } else {
                         logInfo("incoming message: " + inMessage.getText());
                         incomingMessages.add(inMessage);

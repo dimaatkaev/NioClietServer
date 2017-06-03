@@ -71,17 +71,19 @@ public class ClientInterface {
     }
 
     private void setUpNetworking() throws InterruptedException {
+
+        int SLEEP_TIME = 1000;
         try {
             askNickname();
             do {
-                Thread.sleep(500);
-                System.out.println("sleeping period was 500.");
+                Thread.sleep(SLEEP_TIME);
+                System.out.println("sleeping period was " + SLEEP_TIME + ".");
             } while (manager.getSender() == null);
 
             manager.sendRegisterMessage();
 
             // wait for response
-            Thread.sleep(1000);
+            Thread.sleep(SLEEP_TIME);
             participantsList.setListData(manager.getParticipants().toArray());
             participantsCount = manager.getParticipants().size();
         } catch (IOException ex) {
@@ -125,16 +127,16 @@ public class ClientInterface {
     }
 
     class UpdateLookUp extends Thread {
-
+        int SLEEP_TIME = 1000;
 
         @Override
         public void run() {
             while (!isInterrupted()) {
                 try {
-                    Thread.sleep(1000);
-                    if (participants.size() > participantsCount) {
-                        participantsList.setListData(participants.toArray());
-                        participantsCount = participants.size();
+                    Thread.sleep(SLEEP_TIME);
+                    if (manager.getParticipants().size() > participantsCount) {
+                        participantsList.setListData(manager.getParticipants().toArray());
+                        participantsCount = manager.getParticipants().size();
                     }
 
                     if (incomingMessages.size() > communicationMessagesCount) {

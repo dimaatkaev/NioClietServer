@@ -34,17 +34,15 @@ public class RegisterHandler implements Handler, Runnable {
 
         try {
             String clientsAsString = String.join(", ", clients.keySet());
-//            Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
-            Message request = MessageFactory.getRegisterResponse(clientsAsString);
+            Message listOfParticipants = MessageFactory.getRegisterResponse(clientsAsString);
             // send chat participant list to each participant
             for (Map.Entry<String, SocketChannel> client : clients.entrySet()) {
                 SocketChannel socketChannel = client.getValue();
-//                communicationBuffer = ByteBuffer.wrap(requestBytes);
                 boolean sent = true;
                 while (sent) {
-                    sendMessage(socketChannel, request);
+                    sendMessage(socketChannel, listOfParticipants);
                     sent = false;
-                    logInfo("List of participants: [" + request.toString() + "] was sent to [" + client.getKey() + "]");
+                    logInfo("List of participants: [" + listOfParticipants.toString() + "] was sent to [" + client.getKey() + "]");
                 }
             }
         } catch (Exception e) {
