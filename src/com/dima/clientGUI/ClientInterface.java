@@ -20,15 +20,17 @@ import static javax.swing.JFrame.EXIT_ON_CLOSE;
 
 
 public class ClientInterface {
-    JTextField outgoing;
-    JList participantsList;
-    JTextArea incoming;
-    Manager manager = Manager.getInstance();
-    List<String> participants = manager.getParticipants();
-    List<Message> incomingMessages = manager.getIncomingMessages();
+    private JTextField outgoing;
+    private JList participantsList;
+    private JTextArea incoming;
+    private Manager manager = Manager.getInstance();
+    private List<Message> incomingMessages = manager.getIncomingMessages();
 
-    int communicationMessagesCount = 0;
-    int participantsCount = 0;
+    private int communicationMessagesCount = 0;
+    private int participantsCount = 0;
+
+    private int SLEEP_TIME = 1000;
+
 
     public static void main(String[] args) throws InterruptedException {
         new ClientInterface().go();
@@ -71,8 +73,6 @@ public class ClientInterface {
     }
 
     private void setUpNetworking() throws InterruptedException {
-
-        int SLEEP_TIME = 1000;
         try {
             askNickname();
             do {
@@ -127,13 +127,12 @@ public class ClientInterface {
     }
 
     class UpdateLookUp extends Thread {
-        int SLEEP_TIME = 1000;
-
         @Override
         public void run() {
             while (!isInterrupted()) {
                 try {
                     Thread.sleep(SLEEP_TIME);
+
                     if (manager.getParticipants().size() > participantsCount) {
                         participantsList.setListData(manager.getParticipants().toArray());
                         participantsCount = manager.getParticipants().size();
