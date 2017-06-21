@@ -6,7 +6,6 @@ import com.MessageUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -25,7 +24,6 @@ public class Server {
     private static Selector selector;
 
     private final static int INIT_PORT = 1111;
-    private static final int BYTE_BUFFER_CAPACITY = 256;
 
     public static void main(String[] args) {
         try {
@@ -40,28 +38,19 @@ public class Server {
         InetSocketAddress serverAddr = new InetSocketAddress("localhost", INIT_PORT);
         serverChannel.bind(serverAddr);
         serverChannel.configureBlocking(false);
-//        int ops = serverChennel.validOps();
-//        serverChennel.register(selector, ops, null);
-
-        /*Selector */selector = Selector.open(); // selector is open here
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-
         messageRouter.start();
-
         while (true) {
             logInfo("Server waiting for new connection and buffer select.");
             // Selects a set of keys whose corresponding channels are ready for I/O operations
             int readyChannels = selector.select();
-
             if(readyChannels == 0) continue;
-
             Set<SelectionKey> clientKeys = selector.selectedKeys();
             Iterator<SelectionKey> keysIterator = clientKeys.iterator();
 
             while (keysIterator.hasNext()) {
                 SelectionKey key = keysIterator.next();
                 try {
-//                key.isValid();
                     if (key.isAcceptable()) {
                         SocketChannel socketChannel = serverChannel.accept();
                         socketChannel.configureBlocking(false);
@@ -88,8 +77,6 @@ public class Server {
                             );
                             getClientBuffers(socketChannel).getToRead()[0].clear();
                             messageRouter.addMessageInQueue(incomingMessage, socketChannel);
-
-//                                socketChannel.register(selector, SelectionKey.OP_WRITE);
                         }
                     } else if (key.isWritable()) {
                         SocketChannel socketChannel = (SocketChannel) key.channel();
