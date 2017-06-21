@@ -2,6 +2,7 @@ package com.handlers;
 
 import com.Message;
 import com.server.MessageWithSocketChannel;
+import com.server.Server;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -32,14 +33,9 @@ public class CommunicationHandler implements Handler, Runnable {
         try {
             String recipient = message.getNickname();
             SocketChannel socketChannel = clients.get(recipient);
-
-            boolean sent = true;
-            while (sent) {
-                // TODO change implementation
-                    sendMessage(socketChannel, message);
-                    sent = false;
-                    logInfo("Communication message: " + message + " was sent to " + recipient + ".");
-            }
+            CommonActions.fullBuffers(message, socketChannel);
+            Server.readyToWrite(socketChannel);
+            logInfo("Communication message: " + message + " was sent to " + recipient + ".");
         } catch (IOException e) {
             logWarn("Communication message failed due connection problem. Message: " + message);
             e.printStackTrace();
@@ -48,12 +44,12 @@ public class CommunicationHandler implements Handler, Runnable {
         }
     }
 
-    private static void logWarn(String logline) {
-        System.out.println(CommunicationHandler.class.getName() + " WARN: " + logline + ".");
-    }
-
     private static void logInfo(String logline) {
         System.out.println(CommunicationHandler.class.getName() + " INFO: [" + logline + ".");
+    }
+
+    private static void logWarn(String logline) {
+        System.out.println(CommunicationHandler.class.getName() + " WARN: " + logline + ".");
     }
 
     private static void logError(String logline) {

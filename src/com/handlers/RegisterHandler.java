@@ -36,13 +36,9 @@ public class RegisterHandler implements Handler, Runnable {
             // send chat participant list to each participant
             for (Map.Entry<String, SocketChannel> client : clients.entrySet()) {
                 SocketChannel socketChannel = client.getValue();
-                boolean sent = true;
-                while (sent) {
-                    CommonActions.fullBuffers(response, socketChannel);
-                    sent = false;
-                    logInfo("List of participants: [" + response.toString() + "] was sent to [" + client.getKey() + "]");
-                }
+                CommonActions.fullBuffers(response, socketChannel);
                 Server.readyToWrite(socketChannel);
+                logInfo("List of participants: [" + response.toString() + "] was sent to [" + client.getKey() + "]");
             }
         } catch (Exception e) {
             logError("Register request failed.");

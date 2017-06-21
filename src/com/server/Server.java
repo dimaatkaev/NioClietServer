@@ -86,6 +86,7 @@ public class Server {
                                     // TODO implement cycle
                                     getClientBuffers(socketChannel).getToRead()[0].array()
                             );
+                            getClientBuffers(socketChannel).getToRead()[0].clear();
                             messageRouter.addMessageInQueue(incomingMessage, socketChannel);
 
 //                                socketChannel.register(selector, SelectionKey.OP_WRITE);
