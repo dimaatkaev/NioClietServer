@@ -1,7 +1,7 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageWithSocketChannel;
+import com.server.MessageWithSocketChannel;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
@@ -35,6 +35,7 @@ public class CommunicationHandler implements Handler, Runnable {
 
             boolean sent = true;
             while (sent) {
+                // TODO change implementation
                     sendMessage(socketChannel, message);
                     sent = false;
                     logInfo("Communication message: " + message + " was sent to " + recipient + ".");

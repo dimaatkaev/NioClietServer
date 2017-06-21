@@ -1,5 +1,6 @@
-package com;
+package com.server;
 
+import com.Message;
 import com.handlers.CommunicationHandler;
 import com.handlers.Handler;
 import com.handlers.RegisterHandler;
@@ -36,6 +37,7 @@ public class MessageRouter extends Thread {
 
     @Override
     public void run() {
+        logInfo("MessageRouter started.");
         while (true) {
             if (!handleMessages.isEmpty()) {
                 MessageWithSocketChannel pollValue = (MessageWithSocketChannel) handleMessages.poll();

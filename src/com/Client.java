@@ -44,7 +44,7 @@ public class Client {
         InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
         SocketChannel client = connectToServer(serverAdr);
 
-        log("Connecting to com.Server on port " + INIT_PORT + "...");
+        log("Connecting to com.server.Server on port " + INIT_PORT + "...");
 
         sendRegisterMessage(client);
 

@@ -107,6 +107,18 @@ public class MessageUtils {
         return splitByteArrayToParts(originArray);
     }
 
+    public static ByteBuffer[] splitToByteBuffer(Message message) throws IOException {
+        Byte[] originArray = toObjByte(getMessageAsByteArray(message));
+        List<Byte[]> list = splitByteArrayToParts(originArray);
+        ByteBuffer[] result = new ByteBuffer[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            Byte[] objBytes = list.get(i);
+            byte[] primBytes = toPrimByte(objBytes);
+            result[i] = ByteBuffer.wrap(primBytes);
+        }
+        return result;
+    }
+
     public static Message collectMessage(List<Byte[]> originList) throws IOException, ClassNotFoundException {
         byte[] collectedArray = toPrimByte(collectByteArrayByParts(originList));
         return getMessageFromByteArray(collectedArray);
@@ -136,8 +148,13 @@ public class MessageUtils {
      * @param array
      * @return -1 if could not find
      */
-    private static int findTerminatorPosition(Byte[] array) {
+    public static int findTerminatorPosition(Byte[] array) {
         String str = new String(toPrimByte(array));
-        return str.indexOf(30);
+        return str.indexOf(TERMINATOR);
+    }
+
+    public static int findTerminatorPosition(byte[] array) {
+        String str = new String(array);
+        return str.indexOf(TERMINATOR);
     }
 }

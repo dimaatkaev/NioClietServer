@@ -1,12 +1,11 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageWithSocketChannel;
+import com.server.MessageWithSocketChannel;
+import com.server.Server;
 
 import java.nio.channels.SocketChannel;
 import java.util.Map;
-
-import static com.MessageUtils.sendMessage;
 
 public class RegisterHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -33,17 +32,17 @@ public class RegisterHandler implements Handler, Runnable {
 
         try {
             String clientsAsString = String.join(", ", clients.keySet());
-            Message request = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
+            Message response = new Message(Message.Type.REGISTER_RESPONSE, clientsAsString, "server");
             // send chat participant list to each participant
             for (Map.Entry<String, SocketChannel> client : clients.entrySet()) {
                 SocketChannel socketChannel = client.getValue();
-//                communicationBuffer = ByteBuffer.wrap(requestBytes);
                 boolean sent = true;
                 while (sent) {
-                    sendMessage(socketChannel, request);
+                    CommonActions.fullBuffers(response, socketChannel);
                     sent = false;
-                    logInfo("List of participants: [" + request.toString() + "] was sent to [" + client.getKey() + "]");
+                    logInfo("List of participants: [" + response.toString() + "] was sent to [" + client.getKey() + "]");
                 }
+                Server.readyToWrite(socketChannel);
             }
         } catch (Exception e) {
             logError("Register request failed.");
