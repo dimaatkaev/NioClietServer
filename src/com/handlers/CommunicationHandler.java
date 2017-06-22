@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 
-import static com.MessageUtils.sendMessage;
-
 public class CommunicationHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
     private Message message;

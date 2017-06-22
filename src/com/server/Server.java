@@ -38,6 +38,7 @@ public class Server {
         InetSocketAddress serverAddr = new InetSocketAddress("localhost", INIT_PORT);
         serverChannel.bind(serverAddr);
         serverChannel.configureBlocking(false);
+        selector = Selector.open();
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         messageRouter.start();
         while (true) {

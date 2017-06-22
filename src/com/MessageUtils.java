@@ -16,8 +16,7 @@ public class MessageUtils {
     private static final int BYTE_BUFFER_CAPACITY = 256;
     private static final byte TERMINATOR = 30;
 
-    public static Message getMessage(SocketChannel client) throws IOException, ClassNotFoundException {
-        ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
+    public static Message getMessage(SocketChannel client, ByteBuffer clientBuffer) throws IOException, ClassNotFoundException {
         List<Byte[]> messageAsList = new ArrayList<>();
         while (true) {
             client.read(clientBuffer);
@@ -153,6 +152,12 @@ public class MessageUtils {
         return str.indexOf(TERMINATOR);
     }
 
+    /**
+     * Find terminator in the byte array.
+     *
+     * @param array
+     * @return -1 if could not find
+     */
     public static int findTerminatorPosition(byte[] array) {
         String str = new String(array);
         return str.indexOf(TERMINATOR);

@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,16 +15,19 @@ import static com.MessageUtils.sendMessage;
 
 public class Client {
 
-    private String name;
+    private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    private final ByteBuffer clientBuffer = ByteBuffer.allocate(BYTE_BUFFER_CAPACITY);
+
     private List<String> chatMembers = new ArrayList<>();
-    private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+    private String name;
+    private SocketChannel client;
+    private boolean isFinish;
 
     private static final String REGISTER_MESSAGE = "register";
     private static final String EXIT_PHRASE = "exit";
     private static final int WAIT_TIME = 1000;
     private static final int INIT_PORT = 1111;
-
-    private boolean isFinish = false;
+    private static final int BYTE_BUFFER_CAPACITY = 256;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         new Client().go();
@@ -42,7 +47,7 @@ public class Client {
 
     private void go() throws IOException, ClassNotFoundException, InterruptedException {
         InetSocketAddress serverAdr = new InetSocketAddress("localhost", INIT_PORT);
-        SocketChannel client = connectToServer(serverAdr);
+        client = connectToServer(serverAdr);
 
         log("Connecting to com.server.Server on port " + INIT_PORT + "...");
 
@@ -57,8 +62,6 @@ public class Client {
         }
 
         askCommunicationMessage(client, listener);
-
-        client.close();
     }
 
     private void askCommunicationMessage(SocketChannel client, Thread listener) throws IOException {
@@ -72,7 +75,9 @@ public class Client {
             log("please choose recipient: " + String.join(", ", chatMembers));
             String recipient = readLine();
             if (!chatMembers.contains(recipient)) {
-                log("There is no recipient with entered name");
+                if (!isFinish) {
+                    log("There is no recipient with entered name");
+                }
                 continue;
             }
 
@@ -106,13 +111,15 @@ public class Client {
         public void run() {
             while (!isInterrupted()) {
                 try {
-                    Message inMessage = MessageUtils.getMessage(client);
+                    Message inMessage = MessageUtils.getMessage(client, clientBuffer);
 
                     if (inMessage.getType().equals(Message.Type.REGISTER_RESPONSE)) {
                         setChatMembers(getChatMembers(inMessage.getText()));
                     } else {
                         log("incoming message: " + inMessage.getText());
                     }
+                } catch (AsynchronousCloseException e) {
+                    log("Client Interface closed.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
