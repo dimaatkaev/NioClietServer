@@ -3,8 +3,8 @@ package com.server;
 import java.nio.ByteBuffer;
 
 public class ClientBuffers {
-    private ByteBuffer[] toRead;
-    private ByteBuffer[] toWrite;
+    private final ByteBuffer[] toRead;
+    private final ByteBuffer[] toWrite;
 
     public ClientBuffers(ByteBuffer[] toRead, ByteBuffer[] toWrite) {
         this.toRead = toRead;
@@ -15,15 +15,12 @@ public class ClientBuffers {
         return toRead;
     }
 
-    public void setToRead(ByteBuffer[] toRead) {
-        this.toRead = toRead;
-    }
-
     public ByteBuffer[] getToWrite() {
         return toWrite;
     }
 
-    public void setToWrite(ByteBuffer[] toWrite) {
-        this.toWrite = toWrite;
+    @Override
+    public String toString() {
+        return "Client buffers toRead: " + toRead.length + ", toWrite: " + toWrite.length;
     }
 }
