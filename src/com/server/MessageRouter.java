@@ -56,7 +56,7 @@ public class MessageRouter extends Thread {
 
                 // FIXME: is it necessary to do this check
                 if (!isHandled) {
-                    logInfo("Could not find appropriate handler to process message" + pollValue.getMessage().toString());
+                    logInfo("Could not find appropriate handler to process collectedBytes" + pollValue.getMessage().toString());
                 }
             }
         }

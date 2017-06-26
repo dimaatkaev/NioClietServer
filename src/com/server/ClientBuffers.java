@@ -1,14 +1,27 @@
 package com.server;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientBuffers {
-    private final ByteBuffer[] toRead;
-    private final ByteBuffer[] toWrite;
+    private ByteBuffer[] toRead;
+    private ByteBuffer[] toWrite;
+
+    private List<byte[]> collectedBytes;
 
     public ClientBuffers(ByteBuffer[] toRead, ByteBuffer[] toWrite) {
         this.toRead = toRead;
         this.toWrite = toWrite;
+        collectedBytes = new ArrayList<>();
+    }
+
+    public void cleanUp() {
+        collectedBytes.clear();
+    }
+
+    public List<byte[]> getCollectedBytes() {
+        return collectedBytes;
     }
 
     public ByteBuffer[] getToRead() {
@@ -17,6 +30,14 @@ public class ClientBuffers {
 
     public ByteBuffer[] getToWrite() {
         return toWrite;
+    }
+
+    public void setToRead(ByteBuffer[] toRead) {
+        this.toRead = toRead;
+    }
+
+    public void setToWrite(ByteBuffer[] toWrite) {
+        this.toWrite = toWrite;
     }
 
     @Override

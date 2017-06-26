@@ -31,7 +31,7 @@ public class CommunicationHandler implements Handler, Runnable {
         try {
             String recipient = message.getNickname();
             SocketChannel socketChannel = clients.get(recipient);
-            CommonActions.fullBuffers(message, socketChannel);
+            CommonActions.fillBuffers(message, socketChannel);
             Server.readyToWrite(socketChannel);
             logInfo("Communication message: " + message + " was sent to " + recipient + ".");
         } catch (IOException e) {

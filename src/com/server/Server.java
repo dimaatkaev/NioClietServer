@@ -10,7 +10,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,28 +62,31 @@ public class Server {
                         socketChannel.register(selector, SelectionKey.OP_READ);
                     } else if (key.isReadable()) {
                         SocketChannel socketChannel = (SocketChannel) key.channel();
-                        // TODO implement read whole array
+                        // FIXME is it needs ByteBuffers array ?
                         ByteBuffer buffer = getClientBuffers(socketChannel).getToRead()[0];
                         int bytesRead = socketChannel.read(buffer);
                         logInfo("Reading from " + socketChannel.getRemoteAddress() + ", bytes read=" + bytesRead);
 
                         // Detecting connection closed from client side
                         if (bytesRead == -1) {
+                            // TODO remove customer from list
                             removeSocketChennal(socketChannel);
+                            continue;
                         }
 
-                        // Detecting end of the message
+                        // Detecting end of the collectedBytes
                         if (bytesRead > 0 && findTerminatorPosition(buffer.array()) != -1) {
-                            Message incomingMessage = MessageUtils.getMessageFromByteArray(
-                                    // TODO implement cycle
-                                    getClientBuffers(socketChannel).getToRead()[0].array()
+                            collectCurrentBytesToCustomerBuffers(socketChannel);
+                            Message incomingMessage = MessageUtils.collectMessageFromPrim(
+                                    getClientBuffers(socketChannel).getCollectedBytes()
                             );
-                            getClientBuffers(socketChannel).getToRead()[0].clear();
+                            getClientBuffers(socketChannel).cleanUp();
                             messageRouter.addMessageInQueue(incomingMessage, socketChannel);
+                        } else {
+                            collectCurrentBytesToCustomerBuffers(socketChannel);
                         }
                     } else if (key.isWritable()) {
                         SocketChannel socketChannel = (SocketChannel) key.channel();
-                        // TODO race condition someware around here
                         ByteBuffer[] buffers = getClientBuffers(socketChannel).getToWrite();
 
                         long bytesWritten = socketChannel.write(buffers); // woun't always write anything
@@ -101,6 +106,16 @@ public class Server {
                 keysIterator.remove();
             }
         }
+    }
+
+    private void collectCurrentBytesToCustomerBuffers(SocketChannel socketChannel) {
+
+        ByteBuffer buf = getClientBuffers(socketChannel).getToRead()[0];
+
+        byte[] currentBytes = MessageUtils.getBytesFromBuffer(buf);
+
+        getClientBuffers(socketChannel).getCollectedBytes().add(currentBytes);
+        getClientBuffers(socketChannel).getToRead()[0].clear();
     }
 
     public static void registerSocketChannel(SocketChannel socketChannel) {
