@@ -1,13 +1,12 @@
 package com.handlers;
 
 import com.Message;
-import com.MessageWithSocketChannel;
+import com.server.MessageWithSocketChannel;
+import com.server.Server;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
-
-import static com.MessageUtils.sendMessage;
 
 public class CommunicationHandler implements Handler, Runnable {
     private Map<String, SocketChannel> clients;
@@ -32,13 +31,9 @@ public class CommunicationHandler implements Handler, Runnable {
         try {
             String recipient = message.getNickname();
             SocketChannel socketChannel = clients.get(recipient);
-
-            boolean sent = true;
-            while (sent) {
-                    sendMessage(socketChannel, message);
-                    sent = false;
-                    logInfo("Communication message: " + message + " was sent to " + recipient + ".");
-            }
+            CommonActions.fillBuffers(message, socketChannel);
+            Server.readyToWrite(socketChannel);
+            logInfo("Communication message: " + message + " was sent to " + recipient + ".");
         } catch (IOException e) {
             logWarn("Communication message failed due connection problem. Message: " + message);
             e.printStackTrace();
@@ -47,12 +42,12 @@ public class CommunicationHandler implements Handler, Runnable {
         }
     }
 
-    private static void logWarn(String logline) {
-        System.out.println(CommunicationHandler.class.getName() + " WARN: " + logline + ".");
-    }
-
     private static void logInfo(String logline) {
         System.out.println(CommunicationHandler.class.getName() + " INFO: [" + logline + ".");
+    }
+
+    private static void logWarn(String logline) {
+        System.out.println(CommunicationHandler.class.getName() + " WARN: " + logline + ".");
     }
 
     private static void logError(String logline) {

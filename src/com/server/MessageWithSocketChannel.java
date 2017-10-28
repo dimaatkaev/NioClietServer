@@ -1,4 +1,6 @@
-package com;
+package com.server;
+
+import com.Message;
 
 import java.nio.channels.SocketChannel;
 

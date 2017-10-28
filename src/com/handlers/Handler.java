@@ -1,6 +1,6 @@
 package com.handlers;
 
-import com.MessageWithSocketChannel;
+import com.server.MessageWithSocketChannel;
 
 public interface Handler extends Runnable {
     void processMessage();

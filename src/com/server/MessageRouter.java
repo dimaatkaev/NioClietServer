@@ -1,5 +1,6 @@
-package com;
+package com.server;
 
+import com.Message;
 import com.handlers.CommunicationHandler;
 import com.handlers.Handler;
 import com.handlers.RegisterHandler;
@@ -36,6 +37,7 @@ public class MessageRouter extends Thread {
 
     @Override
     public void run() {
+        logInfo("MessageRouter started.");
         while (true) {
             if (!handleMessages.isEmpty()) {
                 MessageWithSocketChannel pollValue = (MessageWithSocketChannel) handleMessages.poll();
@@ -54,7 +56,7 @@ public class MessageRouter extends Thread {
 
                 // FIXME: is it necessary to do this check
                 if (!isHandled) {
-                    logInfo("Could not find appropriate handler to process message" + pollValue.getMessage().toString());
+                    logInfo("Could not find appropriate handler to process collectedBytes" + pollValue.getMessage().toString());
                 }
             }
         }
